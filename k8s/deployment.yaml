@@ -1,0 +1,152 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: recommend-engine
+  namespace: rec-system
+  labels:
+    app: recommend-engine
+    component: serving
+spec:
+  replicas: 64
+  strategy:
+    rollingUpdate:
+      maxSurge: 8
+      maxUnavailable: 4
+  selector:
+    matchLabels:
+      app: recommend-engine
+  template:
+    metadata:
+      labels:
+        app: recommend-engine
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8001"
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - recommend-engine
+              topologyKey: kubernetes.io/hostname
+      containers:
+      - name: engine
+        image: recommend-engine:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+          name: http-api
+        - containerPort: 8001
+          name: metrics
+        env:
+        - name: REC_ENVIRONMENT
+          value: "production"
+        - name: REC_LOG_LEVEL
+          value: "INFO"
+        - name: REC_API_WORKERS
+          value: "8"
+        - name: REC_KAFKA_BOOTSTRAP_SERVERS
+          value: "kafka-cluster:9092"
+        - name: REC_REDIS_HOST
+          value: "redis-feature-cache"
+        - name: REC_FAISS_INDEX_PATH
+          value: "/data/index/faiss"
+        - name: REC_MLFLOW_TRACKING_URI
+          value: "http://mlflow:5000"
+        resources:
+          requests:
+            cpu: "4"
+            memory: "16Gi"
+          limits:
+            cpu: "8"
+            memory: "32Gi"
+        livenessProbe:
+          httpGet:
+            path: /v1/health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /v1/health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        volumeMounts:
+        - name: model-storage
+          mountPath: /data
+        - name: config
+          mountPath: /etc/config
+      volumes:
+      - name: model-storage
+        persistentVolumeClaim:
+          claimName: model-storage-pvc
+      - name: config
+        configMap:
+          name: recommend-engine-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: recommend-engine
+  namespace: rec-system
+  labels:
+    app: recommend-engine
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8000
+    targetPort: 8000
+    protocol: TCP
+    name: http-api
+  - port: 8001
+    targetPort: 8001
+    protocol: TCP
+    name: metrics
+  selector:
+    app: recommend-engine
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: recommend-engine
+  namespace: rec-system
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: recommend-engine
+  minReplicas: 16
+  maxReplicas: 256
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 75
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 15
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60

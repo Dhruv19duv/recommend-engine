@@ -1,0 +1,69 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: recommend-engine-config
+  namespace: rec-system
+data:
+  REC_ENVIRONMENT: "production"
+  REC_LOG_LEVEL: "INFO"
+  REC_API_HOST: "0.0.0.0"
+  REC_API_PORT: "8000"
+  REC_API_WORKERS: "8"
+  REC_NUM_USERS: "400000000"
+  REC_NUM_PRODUCTS: "350000000"
+  REC_EMBEDDING_DIM: "256"
+  REC_DEFAULT_TOP_K: "50"
+  REC_LATENCY_BUDGET_MS: "10"
+  REC_KAFKA_TOPIC_EVENTS: "user-events"
+  REC_KAFKA_TOPIC_PURCHASES: "purchases"
+  REC_KAFKA_TOPIC_CACHE_INVALIDATION: "cache-invalidation"
+  REC_CACHE_L1_CAPACITY: "100000"
+  REC_CACHE_L2_CAPACITY: "10000000"
+  REC_SHADOW_TRAFFIC_RATIO: "0.05"
+  REC_ECHO_CHAMBER_INJECTION_RATE: "0.142857"
+  REC_REGRET_RETURN_THRESHOLD: "0.02"
+  REC_LIFE_STAGE_SIMILARITY_THRESHOLD: "0.80"
+  REC_FRAUD_AUTO_DEMOTE_THRESHOLD: "0.75"
+  PROMETHEUS_PORT: "8001"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: model-storage-pvc
+  namespace: rec-system
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 500Gi
+  storageClassName: fast-ssd
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: rec-system
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 5s
+      evaluation_interval: 10s
+    scrape_configs:
+    - job_name: recommend-engine
+      kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+          - rec-system
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        regex: recommend-engine
+        action: keep
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        regex: "true"
+        action: keep
+      - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__

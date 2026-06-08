@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rec-system
+  labels:
+    name: rec-system
+    environment: production

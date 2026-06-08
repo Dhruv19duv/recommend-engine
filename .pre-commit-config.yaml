@@ -1,0 +1,74 @@
+# Pre-commit configuration for Recommend Engine
+# Install: pip install pre-commit && pre-commit install
+# Run all:  pre-commit run --all-files
+
+repos:
+  # ── Code Formatter ───────────────────────────────────────────
+  - repo: https://github.com/psf/black
+    rev: 24.2.0
+    hooks:
+      - id: black
+        name: black (Python formatter)
+        args: [--line-length=100, --target-version=py310]
+        language_version: python3.10
+
+  # ── Linter (includes import sorting via I rules) ─────────────
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.2.2
+    hooks:
+      - id: ruff
+        name: ruff (Python linter + import sorter)
+        args:
+          - --fix
+          - --exit-non-zero-on-fix
+          - --line-length=100
+          - --select=E,F,I,N,W
+
+  # ── Type Checker ─────────────────────────────────────────────
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.8.0
+    hooks:
+      - id: mypy
+        name: mypy (type checker)
+        args:
+          - --ignore-missing-imports
+          - --no-strict-optional
+          - --follow-imports=skip
+        exclude: ^(tests/|demos/)
+        additional_dependencies:
+          - types-PyYAML
+          - types-redis
+
+  # ── General Sanity Checks ────────────────────────────────────
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+        name: Trim trailing whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: end-of-file-fixer
+        name: Ensure files end with newline
+      - id: check-yaml
+        name: Validate YAML syntax
+      - id: check-json
+        name: Validate JSON syntax
+      - id: check-toml
+        name: Validate TOML syntax
+      - id: check-added-large-files
+        name: Check for large files
+        args: [--maxkb=1024]
+      - id: check-merge-conflict
+        name: Check for merge conflicts
+      - id: debug-statements
+        name: Check for debug imports
+        language_version: python3.10
+
+  # ── Security Scan ────────────────────────────────────────────
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.7
+    hooks:
+      - id: bandit
+        name: bandit (security linter)
+        args: [-ll, -x, tests/, demos/]
+        additional_dependencies:
+          - bandit[toml]
