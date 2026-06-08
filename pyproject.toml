@@ -24,7 +24,6 @@ dependencies = [
     "pyarrow>=12.0.0",
 
     # Graph Neural Networks
-    "dgl>=1.1.0",
 
     # ANN Search
     "faiss-cpu>=1.7.4",
