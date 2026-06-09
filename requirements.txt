@@ -12,3 +12,5 @@ mmh3>=4.0.0
 sortedcontainers>=2.4.0
 orjson>=3.9.0
 msgpack>=1.0.0
+setuptools>=68.0
+wheel

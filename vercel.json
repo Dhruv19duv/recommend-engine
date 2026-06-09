@@ -11,5 +11,6 @@
       "src": "/(.*)",
       "dest": "api/index.py"
     }
-  ]
+  ],
+  "installCommand": "pip install --no-cache-dir -r requirements.txt || pip install --no-cache-dir setuptools wheel && pip install --no-cache-dir -r requirements.txt"
 }
