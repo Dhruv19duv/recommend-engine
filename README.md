@@ -1,10 +1,21 @@
 <div align="center">
-  <img src="https://img.shields.io/badge/deployed_on-Vercel-000?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel">
-  <img src="https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
+  <a href="https://recommend-engine.vercel.app">
+    <img src="https://img.shields.io/badge/LIVE_DEMO-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Live Demo">
+  </a>
+  <a href="https://github.com/Dhruv19duv/recommend-engine">
+    <img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub">
+  </a>
+  <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
   <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI">
-  <img src="https://img.shields.io/badge/PyTorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white" alt="PyTorch">
   <br>
-  <strong>Live:</strong> <a href="https://recommend-engine.vercel.app">recommend-engine.vercel.app</a>
+  <br>
+  <a href="https://recommend-engine.vercel.app">
+    <img src="screenshot.png" alt="Recommend Engine Screenshot" width="700">
+  </a>
+  <br>
+  <br>
+  <p><strong>🔗 Live Demo:</strong> <a href="https://recommend-engine.vercel.app">recommend-engine.vercel.app</a></p>
+  <p><strong>📂 GitHub:</strong> <a href="https://github.com/Dhruv19duv/recommend-engine">github.com/Dhruv19duv/recommend-engine</a></p>
 </div>
 
 <br>
